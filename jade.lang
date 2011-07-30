@@ -29,37 +29,32 @@
   </metadata>
 
   <styles>
-    <style id="comment" _name="Comment" map-to="def:comment"/>
-    <style id="doctype" _name="DOCTYPE" map-to="def:preprocessor"/>
-    <style id="processing-instruction"  _name="Processing instruction"  map-to="def:preprocessor"/>
-    <style id="element-name" _name="Element name" map-to="def:identifier"/>
-    <style id="attribute-name" _name="Attribute name" map-to="def:type"/>
+    <style id="comment"         _name="Comment"         map-to="def:comment"/>
+    <style id="doctype"         _name="DOCTYPE"         map-to="def:preprocessor"/>
+    <style id="preprocessor"    _name="Preprocessor"    map-to="def:preprocessor"/>
+    <style id="element-name"    _name="Element name"    map-to="def:identifier"/>
+    <style id="attribute-name"  _name="Attribute name"  map-to="def:type"/>
     <style id="attribute-value" _name="Attribute value" map-to="def:string"/>
-    <style id="tags" _name="Tags"  map-to="def:keyword"/>
-    <style id="entity" _name="Entity" map-to="def:preprocessor"/>
-    <style id="error" _name="Error" map-to="def:error"/>
+    <style id="tags"            _name="Tags"            map-to="def:keyword"/>
+    <style id="entity"          _name="Entity"          map-to="def:preprocessor"/>
+    <style id="error"           _name="Error"           map-to="def:error"/>
     <!-- js -->
-    <style id="js-keywords" _name="JS Keywords"  map-to="def:preprocessor"/>
-    <style id="js-identifiers" _name="JS Identifiers" map-to="def:identifier" />
-    <style id="js-syntax" _name="JS Syntax" map-to="def:syntax" />
-    <style id="js-string" _name="JS String" map-to="def:string" />
-    <style id="js-string-escaped-character" _name="JS Escaped Character" map-to="def:special-char" />
+    <style id="js-identifier" _name="Javascript identifier" />
+    <style id="js-boolean"    _name="Javascript boolean"    map-to="def:boolean" />
+    <style id="js-number"     _name="Javascript number"     map-to="def:number" />
+    <style id="js-keyword"    _name="Javascript keyword"    map-to="def:preprocessor" />
+    <style id="js-string"     _name="Javascript string"     map-to="def:string" />
+    <style id="js-escape"     _name="Escaped character"     map-to="def:special-char" />
   </styles>
 
   <definitions>
 
+    <define-regex id="jsname">[a-zA-Z_][a-zA-Z0-9_]*</define-regex>
     <define-regex id="name">[a-zA-Z0-9_-]+</define-regex>
 
     <context id="doctype" style-ref="doctype">
 		  <match>^(!!!)\s*([a-zA-Z0-9-_]+)</match>
 		</context>
-
-		<context id="attribute-name" class="no-spell-check">
-      <match>(\b\%{name}\s*)=</match>
-      <include>
-        <context sub-pattern="1" style-ref="attribute-name"/>
-      </include>
-    </context>
 
     <context id="entity" style-ref="entity" class="no-spell-check">
         <match>&amp;\%{name};</match>
@@ -73,8 +68,36 @@
         <match>[&amp;&lt;]</match>
     </context>
 
-    <!-- simple javascript -->
-    <context id="js-keyword">
+		<context id="tags">
+      <match>^\s*\b(a|abbr|acronym|address|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|dd|del|details|dfn|div|dl|dt|em|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|nav|noframes|noscript|object|ol|optgroup|option|p|param|pre|q|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|var_keys|video)\s*\b[\?!:]{0,1}</match>
+      <include>
+        <context sub-pattern="1" style-ref="tags"/>
+      </include>
+    </context>
+
+    <context id="attributes">
+		  <start>\(</start>
+		  <end>\)</end>
+		  <include>
+        <context id="attribute-name" class="no-spell-check">
+          <match>(\b\%{name}\s*)=</match>
+          <include>
+            <context sub-pattern="1" style-ref="attribute-name"/>
+          </include>
+        </context>
+        <context ref="js-keyword" />
+        <context ref="js-boolean" />
+        <context ref="js-identifier" />
+        <context ref="js-string" />
+        <context ref="def:float" style-ref="js-number" />
+        <context ref="def:decimal" style-ref="js-number" />
+        <context ref="def:octal" style-ref="js-number" />
+        <context ref="def:hexadecimal" style-ref="js-number" />
+      </include>
+		</context>
+
+		<!-- simple javascript -->
+    <context id="js-keyword" style-ref="js-keyword">
       <keyword>var</keyword>
       <keyword>function</keyword>
       <keyword>if</keyword>
@@ -88,50 +111,26 @@
       <keyword>each</keyword>
     </context>
 
-    <context id="js-identifier" class="no-spell-check">
-      <match>\%{name}</match>
+    <context id="js-boolean" class="no-spell-check" style-ref="js-boolean">
+      <keyword>false</keyword>
+      <keyword>true</keyword>
     </context>
 
-    <context id="js-string" class="no-spell-check">
+    <context id="js-identifier" class="no-spell-check" style-ref="js-identifier">
+      <match>\%{jsname}</match>
+    </context>
+
+    <context id="js-string" end-at-line-end="true" class="string" style-ref="js-string">
       <start>["']</start>
       <end>\%{0@start}</end>
       <include>
-          <context id="escape" style-ref="js-string-escaped-character">
+          <context id="escape" style-ref="js-escape">
             <match>\\.</match>
           </context>
           <context ref="character-reference"/>
       </include>
     </context>
     <!-- end simple javascript -->
-
-    <context id="attribute-value" style-ref="attribute-value" class="string" class-disabled="no-spell-check">
-      <start>["']</start>
-      <end>\%{0@start}</end>
-      <include>
-          <context ref="entity"/>
-          <context ref="character-reference"/>
-          <context ref="unallowed-chars"/>
-      </include>
-    </context>
-
-		<context id="attributes">
-		  <start>\(</start>
-		  <end>\)</end>
-		  <include>
-          <context ref="attribute-name"/>
-          <context ref="attribute-value"/>
-          <context style-ref="error" extend-parent="false">
-            <match>\S</match>
-          </context>
-      </include>
-		</context>
-
-		<context id="tags"  >
-      <match>^\s*\b(a|abbr|acronym|address|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|dd|del|details|dfn|div|dl|dt|em|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|nav|noframes|noscript|object|ol|optgroup|option|p|param|pre|q|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|var_keys|video)\s*\b[\?!:]{0,1}</match>
-      <include>
-        <context sub-pattern="1" style-ref="tags"/>
-      </include>
-    </context>
 
     <context id="attribute-id" style-ref="attribute-name">
       <match>#[a-zA-Z0-9_-]+</match>
@@ -151,10 +150,16 @@
 		<context id="jade-executable" >
 		  <start>^\s*(-)</start>
 		  <end>$</end>
-		  <include>
-		    <context ref="js-keyword" style-ref="js-keywords" />
-		    <context ref="js-identifier" style-ref="js-identifiers" />
-		    <context ref="js-string" style-ref="js-string" />
+	    <include>
+		    <context sub-pattern="1" where="start" style-ref="preprocessor" />
+        <context ref="js-keyword" />
+        <context ref="js-boolean" />
+        <context ref="js-identifier" />
+        <context ref="js-string" />
+        <context ref="def:float" style-ref="js-number" />
+        <context ref="def:decimal" style-ref="js-number" />
+        <context ref="def:octal" style-ref="js-number" />
+        <context ref="def:hexadecimal" style-ref="js-number" />
 		  </include>
 		</context>
 
@@ -162,14 +167,20 @@
 		  <start>[^\\](#\{)</start>
 		  <end>\}</end>
 		  <include>
-		    <context sub-pattern="1" where="start" style-ref="processing-instruction" />
-		    <context ref="js-identifier" style-ref="js-identifiers" />
-        <context ref="js-string" style-ref="js-string" />
-		    <context sub-pattern="0" where="end" style-ref="processing-instruction" />
+		    <context sub-pattern="1" where="start" style-ref="preprocessor" />
+        <context ref="js-keyword" />
+        <context ref="js-boolean" />
+        <context ref="js-identifier" />
+        <context ref="js-string" />
+        <context ref="def:float" style-ref="js-number" />
+        <context ref="def:decimal" style-ref="js-number" />
+        <context ref="def:octal" style-ref="js-number" />
+        <context ref="def:hexadecimal" style-ref="js-number" />
+		    <context sub-pattern="0" where="end" style-ref="preprocessor" />
 		  </include>
 		</context>
 
-		<context id="jade-filter" style-ref="processing-instruction">
+		<context id="jade-filter" style-ref="preprocessor">
       <match>^\s*\:[^$]+$</match>
     </context>
 
