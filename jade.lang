@@ -68,33 +68,58 @@
         <match>[&amp;&lt;]</match>
     </context>
 
-		<context id="tags">
-      <match>^\s*\b(a|abbr|acronym|address|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|dd|del|details|dfn|div|dl|dt|em|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|nav|noframes|noscript|object|ol|optgroup|option|p|param|pre|q|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|var_keys|video)\s*\b[\?!:]{0,1}</match>
-      <include>
-        <context sub-pattern="1" style-ref="tags"/>
-      </include>
+    <context id="attribute-id" style-ref="attribute-name">
+      <match>#[a-zA-Z0-9_-]+</match>
     </context>
 
-    <context id="attributes">
-		  <start>\(</start>
-		  <end>\)</end>
-		  <include>
-        <context id="attribute-name" class="no-spell-check">
-          <match>(\b\%{name}\s*)=</match>
+    <context id="attribute-class" style-ref="attribute-name">
+      <match>\.[a-zA-Z0-9_-]+</match>
+    </context>
+
+		<context id="tags">
+      <start>^\s*\b(a|abbr|acronym|address|area|article|aside|audio|b|base|big|blockquote|body|br|button|canvas|caption|cite|code|col|colgroup|dd|del|details|dfn|div|dl|dt|em|fieldset|figcaption|figure|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|map|mark|menu|meta|nav|noframes|noscript|object|ol|optgroup|option|p|param|pre|q|samp|script|section|select|small|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|ul|var|var_keys|video)\s*\b[\?!:]{0,1}</start>
+      <end>$</end>
+      <include>
+        <context sub-pattern="1" where="start" style-ref="tags"/>
+        <context ref="attribute-id" />
+        <context ref="attribute-class" />
+        <context id="attributes">
+		      <start>\(</start>
+		      <end>\)</end>
+		      <include>
+            <context id="attribute-name" class="no-spell-check">
+              <match>(\b\%{name}\s*)=</match>
+              <include>
+                <context sub-pattern="1" style-ref="attribute-name"/>
+              </include>
+            </context>
+            <context ref="js-keyword" />
+            <context ref="js-boolean" />
+            <context ref="js-identifier" />
+            <context ref="js-string" />
+            <context ref="def:float" style-ref="js-number" />
+            <context ref="def:decimal" style-ref="js-number" />
+            <context ref="def:octal" style-ref="js-number" />
+            <context ref="def:hexadecimal" style-ref="js-number" />
+          </include>
+		    </context>
+        <context id="in-tags-js">
+          <start>=</start>
+          <end>$</end>
           <include>
-            <context sub-pattern="1" style-ref="attribute-name"/>
+            <context ref="js-keyword" />
+            <context ref="js-boolean" />
+            <context ref="js-identifier" />
+            <context ref="js-string" />
+            <context ref="def:float" style-ref="js-number" />
+            <context ref="def:decimal" style-ref="js-number" />
+            <context ref="def:octal" style-ref="js-number" />
+            <context ref="def:hexadecimal" style-ref="js-number" />
           </include>
         </context>
-        <context ref="js-keyword" />
-        <context ref="js-boolean" />
-        <context ref="js-identifier" />
-        <context ref="js-string" />
-        <context ref="def:float" style-ref="js-number" />
-        <context ref="def:decimal" style-ref="js-number" />
-        <context ref="def:octal" style-ref="js-number" />
-        <context ref="def:hexadecimal" style-ref="js-number" />
+        <context ref="jade-interpolated" />
       </include>
-		</context>
+    </context>
 
 		<!-- simple javascript -->
     <context id="js-keyword" style-ref="js-keyword">
@@ -132,14 +157,6 @@
     </context>
     <!-- end simple javascript -->
 
-    <context id="attribute-id" style-ref="attribute-name">
-      <match>#[a-zA-Z0-9_-]+</match>
-    </context>
-
-    <context id="attribute-class" style-ref="attribute-name">
-      <match>\.[a-zA-Z0-9_-]+</match>
-    </context>
-
     <context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
       <start>/(/|if)</start>
       <include>
@@ -168,7 +185,6 @@
 		  <end>\}</end>
 		  <include>
 		    <context sub-pattern="1" where="start" style-ref="preprocessor" />
-        <context ref="js-keyword" />
         <context ref="js-boolean" />
         <context ref="js-identifier" />
         <context ref="js-string" />
@@ -187,10 +203,9 @@
     <context id="jade" class="no-spell-check">
       <include>
         <context ref="doctype"/>
-        <context ref="attributes"/>
-        <context ref="attribute-id"/>
-        <context ref="attribute-class"/>
         <context ref="tags"/>
+        <context ref="attribute-id" />
+        <context ref="attribute-class" />
         <context ref="line-comment"/>
         <context ref="jade-executable"/>
         <context ref="jade-interpolated" />
