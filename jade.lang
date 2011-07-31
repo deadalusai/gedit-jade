@@ -50,7 +50,9 @@
   <definitions>
 
     <define-regex id="jsname">[a-zA-Z_][a-zA-Z0-9_]*</define-regex>
-    <define-regex id="name">[a-zA-Z0-9_-]+</define-regex>
+    <define-regex id="name">\w[\w-]*</define-regex>
+    <define-regex id="attribute-id">#\w[\w-]*</define-regex>
+    <define-regex id="attribute-class">\.\w[\w-]*</define-regex>
 
     <context id="doctype" style-ref="doctype">
 		  <match>^(!!!|doctype)\s*(\w+)?</match>
@@ -68,12 +70,73 @@
         <match>[&amp;&lt;]</match>
     </context>
 
-    <context id="attribute-id" style-ref="attribute-name">
-      <match>#[a-zA-Z0-9_-]+</match>
+    <context id="in-tags-js">
+      <start>=</start>
+      <end>$</end>
+      <include>
+        <context ref="js-keyword" />
+        <context ref="js-boolean" />
+        <context ref="js-identifier" />
+        <context ref="js-string" />
+        <context ref="def:float" style-ref="js-number" />
+        <context ref="def:decimal" style-ref="js-number" />
+        <context ref="def:octal" style-ref="js-number" />
+        <context ref="def:hexadecimal" style-ref="js-number" />
+      </include>
+    </context>
+
+    <context id="in-attributes-js">
+      <start>\(</start>
+      <end>\)</end>
+      <include>
+        <context id="attribute-name" class="no-spell-check">
+          <match>(\b\%{name}\s*)=</match>
+          <include>
+            <context sub-pattern="1" style-ref="attribute-name"/>
+          </include>
+        </context>
+        <context ref="js-keyword" />
+        <context ref="js-boolean" />
+        <context ref="js-identifier" />
+        <context ref="js-string" />
+        <context ref="def:float" style-ref="js-number" />
+        <context ref="def:decimal" style-ref="js-number" />
+        <context ref="def:octal" style-ref="js-number" />
+        <context ref="def:hexadecimal" style-ref="js-number" />
+      </include>
+    </context>
+
+    <context id="attribute-id" style-ref="attribute-name" once-only="true">
+      <match>\%{attribute-id}</match>
+    </context>
+
+    <context id="attribute-id-tags">
+      <start>\%{attribute-id}</start>
+      <end>$</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="attribute-name" />
+        <context ref="attribute-class" />
+        <context ref="in-attributes-js" />
+        <context ref="in-tags-js" />
+        <context ref="jade-interpolated" />
+      </include>
     </context>
 
     <context id="attribute-class" style-ref="attribute-name">
-      <match>\.[a-zA-Z0-9_-]+</match>
+      <match>\%{attribute-class}</match>
+    </context>
+
+    <context id="attribute-class-tags">
+      <start>\%{attribute-class}</start>
+      <end>$</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="attribute-name" />
+        <context ref="attribute-id" />
+        <context ref="attribute-class" />
+        <context ref="in-attributes-js" />
+        <context ref="in-tags-js" />
+        <context ref="jade-interpolated" />
+      </include>
     </context>
 
 		<context id="tags">
@@ -83,40 +146,8 @@
         <context sub-pattern="1" where="start" style-ref="tags"/>
         <context ref="attribute-id" />
         <context ref="attribute-class" />
-        <context id="attributes">
-		      <start>\(</start>
-		      <end>\)</end>
-		      <include>
-            <context id="attribute-name" class="no-spell-check">
-              <match>(\b\%{name}\s*)=</match>
-              <include>
-                <context sub-pattern="1" style-ref="attribute-name"/>
-              </include>
-            </context>
-            <context ref="js-keyword" />
-            <context ref="js-boolean" />
-            <context ref="js-identifier" />
-            <context ref="js-string" />
-            <context ref="def:float" style-ref="js-number" />
-            <context ref="def:decimal" style-ref="js-number" />
-            <context ref="def:octal" style-ref="js-number" />
-            <context ref="def:hexadecimal" style-ref="js-number" />
-          </include>
-		    </context>
-        <context id="in-tags-js">
-          <start>=</start>
-          <end>$</end>
-          <include>
-            <context ref="js-keyword" />
-            <context ref="js-boolean" />
-            <context ref="js-identifier" />
-            <context ref="js-string" />
-            <context ref="def:float" style-ref="js-number" />
-            <context ref="def:decimal" style-ref="js-number" />
-            <context ref="def:octal" style-ref="js-number" />
-            <context ref="def:hexadecimal" style-ref="js-number" />
-          </include>
-        </context>
+        <context ref="in-attributes-js" />
+        <context ref="in-tags-js" />
         <context ref="jade-interpolated" />
       </include>
     </context>
@@ -204,8 +235,8 @@
       <include>
         <context ref="doctype"/>
         <context ref="tags"/>
-        <context ref="attribute-id" />
-        <context ref="attribute-class" />
+        <context ref="attribute-id-tags" />
+        <context ref="attribute-class-tags" />
         <context ref="line-comment"/>
         <context ref="jade-executable"/>
         <context ref="jade-interpolated" />
