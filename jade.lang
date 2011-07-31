@@ -79,20 +79,20 @@
           <end>(,|\))</end>
           <include>
             <context sub-pattern="1" where="start" style-ref="attribute-name"/>
-            <context ref="js-keyword" />
             <context ref="js-simple" />
           </include>
         </context>
       </include>
     </context>
 
-    <context id="in-tags-js">
-      <!-- negative lookbehind requires that '=' is the first character available to match -->
+    <context id="in-tags-js" once-only="true">
+      <!-- TODO: anchor this to the first available character (negative lookbehind & ^ do not work...) -->
       <start>=</start>
       <end>$</end>
       <include>
         <context sub-pattern="0" where="start" style-ref="preprocessor" />
         <context ref="js-keyword" />
+        <context ref="js-comment" />
         <context ref="js-simple" />
       </include>
     </context>
@@ -178,6 +178,16 @@
       </include>
     </context>
 
+    <context id="js-comment" class="comment" style-ref="comment">
+      <start>//</start>
+      <end>$</end>
+    </context>
+
+    <context id="js-block-comment" end-at-line-end="true" class="comment" style-ref="comment">
+      <start>/\*</start>
+      <end>\*/</end>
+    </context>
+
     <context id="js-simple">
       <include>
         <context ref="js-boolean" />
@@ -187,14 +197,16 @@
         <context ref="def:decimal" style-ref="js-number" />
         <context ref="def:octal" style-ref="js-number" />
         <context ref="def:hexadecimal" style-ref="js-number" />
+        <context ref="js-block-comment" />
       </include>
     </context>
     <!-- end simple javascript -->
 
     <context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
-      <start>/(/|if)</start>
+      <start>//(if(?:\s+.+)?)?</start>
       <include>
-       <context ref="def:in-line-comment"/>
+        <context sub-pattern="1" where="start" style-ref="preprocessor" />
+        <context ref="def:in-line-comment"/>
       </include>
     </context>
 
@@ -204,6 +216,7 @@
 	    <include>
 		    <context sub-pattern="1" where="start" style-ref="preprocessor" />
         <context ref="js-keyword" />
+        <context ref="js-comment" />
         <context ref="js-simple" />
 		  </include>
 		</context>
