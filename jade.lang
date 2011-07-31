@@ -70,39 +70,30 @@
         <match>[&amp;&lt;]</match>
     </context>
 
-    <context id="in-tags-js">
-      <start>=</start>
-      <end>$</end>
-      <include>
-        <context ref="js-keyword" />
-        <context ref="js-boolean" />
-        <context ref="js-identifier" />
-        <context ref="js-string" />
-        <context ref="def:float" style-ref="js-number" />
-        <context ref="def:decimal" style-ref="js-number" />
-        <context ref="def:octal" style-ref="js-number" />
-        <context ref="def:hexadecimal" style-ref="js-number" />
-      </include>
-    </context>
-
-    <context id="in-attributes-js">
+    <context id="in-attributes-js" once-only="true">
       <start>\(</start>
       <end>\)</end>
       <include>
-        <context id="attribute-name" class="no-spell-check">
-          <match>(\b\%{name}\s*)=</match>
+        <context id="attribute-assignment" class="no-spell-check" extend-parent="false">
+          <start>(\b\%{name}\s*)=</start>
+          <end>(,|\))</end>
           <include>
-            <context sub-pattern="1" style-ref="attribute-name"/>
+            <context sub-pattern="1" where="start" style-ref="attribute-name"/>
+            <context ref="js-keyword" />
+            <context ref="js-simple" />
           </include>
         </context>
+      </include>
+    </context>
+
+    <context id="in-tags-js">
+      <!-- negative lookbehind requires that '=' is the first character available to match -->
+      <start>=</start>
+      <end>$</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="preprocessor" />
         <context ref="js-keyword" />
-        <context ref="js-boolean" />
-        <context ref="js-identifier" />
-        <context ref="js-string" />
-        <context ref="def:float" style-ref="js-number" />
-        <context ref="def:decimal" style-ref="js-number" />
-        <context ref="def:octal" style-ref="js-number" />
-        <context ref="def:hexadecimal" style-ref="js-number" />
+        <context ref="js-simple" />
       </include>
     </context>
 
@@ -186,6 +177,18 @@
           <context ref="character-reference"/>
       </include>
     </context>
+
+    <context id="js-simple">
+      <include>
+        <context ref="js-boolean" />
+        <context ref="js-identifier" />
+        <context ref="js-string" />
+        <context ref="def:float" style-ref="js-number" />
+        <context ref="def:decimal" style-ref="js-number" />
+        <context ref="def:octal" style-ref="js-number" />
+        <context ref="def:hexadecimal" style-ref="js-number" />
+      </include>
+    </context>
     <!-- end simple javascript -->
 
     <context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
@@ -201,13 +204,7 @@
 	    <include>
 		    <context sub-pattern="1" where="start" style-ref="preprocessor" />
         <context ref="js-keyword" />
-        <context ref="js-boolean" />
-        <context ref="js-identifier" />
-        <context ref="js-string" />
-        <context ref="def:float" style-ref="js-number" />
-        <context ref="def:decimal" style-ref="js-number" />
-        <context ref="def:octal" style-ref="js-number" />
-        <context ref="def:hexadecimal" style-ref="js-number" />
+        <context ref="js-simple" />
 		  </include>
 		</context>
 
@@ -216,13 +213,7 @@
 		  <end>\}</end>
 		  <include>
 		    <context sub-pattern="1" where="start" style-ref="preprocessor" />
-        <context ref="js-boolean" />
-        <context ref="js-identifier" />
-        <context ref="js-string" />
-        <context ref="def:float" style-ref="js-number" />
-        <context ref="def:decimal" style-ref="js-number" />
-        <context ref="def:octal" style-ref="js-number" />
-        <context ref="def:hexadecimal" style-ref="js-number" />
+        <context ref="js-simple" />
 		    <context sub-pattern="0" where="end" style-ref="preprocessor" />
 		  </include>
 		</context>
