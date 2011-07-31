@@ -53,7 +53,7 @@
     <define-regex id="name">[a-zA-Z0-9_-]+</define-regex>
 
     <context id="doctype" style-ref="doctype">
-		  <match>^(!!!)\s*([a-zA-Z0-9-_]+)</match>
+		  <match>^(!!!|doctype)\s*(\w+)?</match>
 		</context>
 
     <context id="entity" style-ref="entity" class="no-spell-check">
