@@ -71,7 +71,7 @@
     </context>
 
     <context id="in-attributes-js" once-only="true">
-      <start>\(</start>
+      <start>\G\(</start>
       <end>\)</end>
       <include>
         <context id="attribute-assignment" class="no-spell-check" extend-parent="false">
@@ -86,8 +86,7 @@
     </context>
 
     <context id="in-tags-js" once-only="true">
-      <!-- TODO: anchor this to the first available character (negative lookbehind & ^ do not work...) -->
-      <start>=</start>
+      <start>\G=</start>
       <end>$</end>
       <include>
         <context sub-pattern="0" where="start" style-ref="preprocessor" />
@@ -98,7 +97,7 @@
     </context>
 
     <context id="attribute-id" style-ref="attribute-name" once-only="true">
-      <match>\%{attribute-id}</match>
+      <match>\G\%{attribute-id}</match>
     </context>
 
     <context id="attribute-id-tags">
@@ -114,7 +113,7 @@
     </context>
 
     <context id="attribute-class" style-ref="attribute-name">
-      <match>\%{attribute-class}</match>
+      <match>\G\%{attribute-class}</match>
     </context>
 
     <context id="attribute-class-tags">
