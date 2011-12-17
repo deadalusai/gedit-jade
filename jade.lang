@@ -153,6 +153,7 @@
       <keyword>false</keyword>
       <keyword>in</keyword>
       <keyword>for</keyword>
+      <keyword>return</keyword>
       <!-- jade-specific -->
       <keyword>each</keyword>
     </context>
